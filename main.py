@@ -4,26 +4,17 @@ import time
 import numpy as np
 import numpy.linalg
 
-
-def print_matrix (m):                                                                                                   # функция вывода матрицы
-    for i in m:
-        for j in i:
-            print ('%4d' %j, end= ' ')
-        print()
 try:
+    numpy.set_printoptions(precision=3, linewidth=150)
     start = time.time()
     n = int(input())
     while n < 4:
         n = int(input('Введите количество строк(столбцов) квадратной матрицы > 3'))
     k = int(input())
-    A = [[0 for i in range (n)]for j in range (n)]                                                                      # задаем матрицу A
-    F = [[0 for i in range(n)] for j in range(n)]                                                                       # задаем матрицу F
-    for i in range (n):
-        for j in range (n):
-            A[i][j] = random.randint(-10,10)
-            F[i][j] = A[i][j]
+    A = np.random.randint(-10,10,(n,n))                                                                                 # задаем матрицу A
+    F = np.copy(A)                                                                                                      # задаем матрицу F
     print ('A')
-    print_matrix(A)
+    print (A)
     s = 0                                                                                                               # введем переменную для подсчета количество нулей в C в нечетных столбцах
     r = 1                                                                                                               # введем переменную для подсчета произведения чисел по периметру С
     for i in range(n):
@@ -32,7 +23,7 @@ try:
                 if j % 2 == 0 and A[i][j] == 0:
                     s += 1
                 if i == 0 or i == (n // 2 - 1) or j == (n // 2 + n % 2) or j == (n-1):
-                    r *= A[i][j]
+                    r *= int(A[i][j])
     print (s,r)
     if s > r:
         for i in range(n // 2 + 1):                                                                                     # если нулей больше то мы симметрично меняем B и C
@@ -43,11 +34,11 @@ try:
                 if j < n // 2 and i < n // 2:
                     F[i][j], F[i + n // 2 + n % 2][j + n // 2 + n % 2] = F[i + n // 2 + n % 2][j + n // 2 + n % 2],F[i][j]
     print('F')
-    print_matrix(F)
+    print (F)
     if np.linalg.det(A) > sum(np.diagonal(F)):                                                                          #если определитель матрицы А больше суммы диагональных элементов матрицы F
-        At = np.transpose(A)                                                                                            # траснпонируем матрицу A
+        At = np.transpose(np.copy(A))                                                                                   # траснпонируем матрицу A
         print('At')
-        print_matrix(At)
+        print (At)
         Aobr = np.ones((n,n))                                                                                           # задаём обратную матрицу
         try:
             Aobr = np.linalg.inv(A)
@@ -55,23 +46,16 @@ try:
             print (Aobr)
         except numpy.linalg.LinAlgError:
             print ('матрица A вырожденная')
-        Umnozh = [[0 for i in range(n)] for j in range(n)]                                                              # умножаем Aobr на At
-        for i in range(n):
-            for j in range(n):
-                Umnozh[i][j] = sum([Aobr[i][h] * At[h][j] for h in range(n)])
+        Umnozh = np.matmul(Aobr,At)                                                                                     # умножаем Aobr на At
         print('Umnozh')
-        print_matrix(Umnozh)
-        Fk = [[j * k for j in i] for i in F]
+        print (Umnozh)
+        Fk = np.dot (F,k)
         print('F*k')
-        print_matrix(Fk)
-        Result = [[0 for i in range(n)] for j in range(n)]                                                              # находим разность умножения и Fk
-        for i in range(n):
-            for j in range(n):
-                Result[i][j] += Umnozh[i][j] - Fk[i][j]
+        print (Fk)
+        Result = Umnozh - Fk                                                                                           # находим разность умножения и Fk
         print ('Result')
-        print_matrix(Result)
+        print (Result)
     else:
-        B = np.array(A)
         G = np.tril(A)
         Gobr = np.zeros((n, n))                                                                                         # задаём обратную матрицу G
         try:
@@ -79,7 +63,7 @@ try:
             print('Gobr')
             print(Gobr)
         except numpy.linalg.LinAlgError:
-            print('матрица A вырожденная')
+            print('матрица G вырожденная')
         Fobr = np.zeros((n, n))                                                                                         # задаём обратную матрицу F
         try:
             Fobr = np.linalg.inv(F)
@@ -87,21 +71,15 @@ try:
             print(Fobr)
         except numpy.linalg.LinAlgError:
             print('матрица F вырожденная')
-        Summa = [[0 for i in range(n)] for j in range(n)]                                                               # вычисляем сумму матрицы A и Gobr
-        for i in range(n):
-            for j in range(n):
-                Summa[i][j] += A[i][j] + Gobr[i][j]
+        Summa = A + Gobr                                                                                                # вычисляем сумму матрицы A и Gobr
         print('Summa')
-        print_matrix(Summa)
-        Vichitanie = [[0 for i in range(n)] for j in range(n)]                                                          # находим разность суммы и матрицы Fobr
-        for i in range(n):
-            for j in range(n):
-                Vichitanie[i][j] += Summa[i][j] - Fobr[i][j]
+        print (Summa)
+        Vichitanie = Summa - Fobr                                                                                       # находим разность суммы и матрицы Fobr
         print('Vichitanie')
-        print_matrix(Vichitanie)
-        Result = [[j * k for j in i] for i in Vichitanie]
+        print (Vichitanie)
+        Result = np.dot(Vichitanie,k)
         print('Result')
-        print_matrix(Result)
+        print (Result)
     print(f"\nВремя выполнения {time.time() - start} секунд")
 except ValueError:
     print("Введённые данные не являются числом")
